@@ -15,7 +15,12 @@ hobkin chat
   lands as one block you can edit before sending, however many lines it has. Up arrow walks your history.
 - **Output above, never through.** What the agent says appears above your prompt while you type.
 - **A status bar** with what the agent's doing right now.
-- **Tab completes the /commands.**
+- **Help on F1** (and `/help`): every command, a line each; `/help model` for one in full.
+- **Commands complete as you type,** with what each does beside it. **`/model` then Tab is a model picker:** your
+  configured models, each with its service, the one in use, and any rate limit it's waiting out. Pick the same model
+  on another service when one runs out of quota, and the switch happens at once.
+- **Code blocks in colour,** by the language their fence names (Pygments).
+- **Tab completes file paths** as you type them in a message, from the folder you started the chat in.
 - **Not full-screen,** on purpose: your terminal's scrollback, search and copying work as they always do. To copy
   a code block the agent wrote, `/copy` (hobkin's) puts it on your clipboard; `/copy 2` the one before.
 
@@ -36,8 +41,9 @@ hearthside.chat(
     send,                       # send(text): a message, newlines and all
     status=status,              # status() -> what it's doing, or None when it's waiting for you
     history="~/.my_history",    # input history (hearthside's own format)
-    commands=["/stop", "/pause"],
-    local={"/copy": copy},      # answered here, never sent: fn(rest) -> text to print
+    commands={"/stop": "finish and exit"},   # or just a list of words
+    local={"/copy": copy, "/help": help},     # answered here, never sent: fn(rest) -> text to print ("/help" is F1)
+    arguments={"/model": models},             # models() -> [(value, what it is)]: the menu after "/model "
 )
 ```
 
