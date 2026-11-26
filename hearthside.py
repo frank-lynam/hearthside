@@ -9,7 +9,8 @@ Install hearthside beside it (`pip install hearthside`) and `hobkin chat` uses t
 - a status bar with what the agent's doing;
 - the /commands complete as you type, each with what it does beside it, and so do their arguments where the
   program offers them (hobkin's /model: a menu of your models, with their services and any rate limit);
-- F1 shows the help;
+- F1 shows the help; F2 goes round how much the chat shows (the program's /show: hobkin's talk, chores, tools,
+  full);
 - code blocks in what the agent says are coloured by their language (Pygments);
 - Tab completes file paths, from the folder you started in;
 - PgUp opens the whole conversation to scroll back through, and Ctrl-F to search it (n and N for the next and
@@ -56,7 +57,7 @@ try:                                                     # code blocks in colour
 except ImportError:                                      # pragma: no cover (it's a dependency)
     highlight = None
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 # Shift+Enter, where the terminal sends it differently from Enter (kitty's and WezTerm's CSI u, xterm's
 # modifyOtherKeys): read as Ctrl+J, which starts a new line
@@ -226,6 +227,12 @@ def keys(local: dict) -> KeyBindings:
             text = local["/help"]("")
             run_in_terminal(lambda: print(text, flush=True))
 
+    @kb.add("f2")
+    def _show(event):                                # the program's /show: how much it shows, round the levels
+        if "/show" in local:
+            text = local["/show"]("")
+            run_in_terminal(lambda: print(text, flush=True))
+
     @kb.add("pageup")
     def _scroll(event):
         event.app.erase_when_done = True             # what you're typing comes back after, not twice
@@ -261,7 +268,7 @@ def chat(name: str, recent: list[str], poll, send, *, status=None, history: str 
     history  a file for input history (hearthside's own format: don't share one with readline)
     commands words to complete (/stop, /pause...), or {word: what it does}, shown beside it
     local    {"/word": fn(rest) -> str}: commands answered here and never sent; what fn returns is printed.
-             "/help" here is also F1.
+             "/help" here is also F1, and "/show" (how much it shows: called with "" for the next level) F2.
     arguments {"/word": fn() -> [(value, what it is)]}: what can follow that command, offered as a menu
     backlog() the whole conversation so far, as lines, for scrolling back (PgUp): default, what this chat has shown
     A message you've half written is kept beside the history file (HISTORY.draft) until it's sent or cleared.

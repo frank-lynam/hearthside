@@ -16,6 +16,8 @@ hobkin chat
 - **Output above, never through.** What the agent says appears above your prompt while you type.
 - **A status bar** with what the agent's doing right now.
 - **Help on F1** (and `/help`): every command, a line each; `/help model` for one in full.
+- **F2 goes round how much the chat shows:** hobkin's `talk` (what's said), `chores` (and its housekeeping),
+  `tools` (and what it runs) and `full` (everything, output too); `/show LEVEL` picks one.
 - **Commands complete as you type,** with what each does beside it. **`/model` then Tab is a model picker:** your
   configured models, each with its service, the one in use, and any rate limit it's waiting out. Pick the same model
   on another service when one runs out of quota, and the switch happens at once.

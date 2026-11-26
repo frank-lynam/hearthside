@@ -16,6 +16,7 @@ from prompt_toolkit.output import DummyOutput  # noqa: E402
 
 failed = False
 HELPED = []
+SHOWN = []
 
 
 def check(name, cond, info=""):
@@ -42,7 +43,8 @@ def run(keys: list[str], **kw):
         threading.Thread(target=typist, daemon=True).start()
         hearthside.chat("s1", ["earlier"], poll, sent.append, status=lambda: "s1 is thinking", history=hist,
                         commands=["/stop", "/pause"], local={"/copy": lambda rest: local_got.append(rest) or "copied",
-                               "/help": lambda rest: HELPED.append(rest) or "the help"},
+                               "/help": lambda rest: HELPED.append(rest) or "the help",
+                               "/show": lambda rest: SHOWN.append(rest) or "showing more"},
                         interval=0.05, **kw)
     return sent, local_got, polled, hist
 
@@ -107,6 +109,8 @@ check("an unknown language is left alone", [hearthside.Painter()(l) for l in ["`
 
 sent, *_ = run(["\x1bOP", "after help\r"])                    # F1 (xterm's code)
 check("F1 is the help, and nothing is sent for it", HELPED == [""] and sent == ["after help"], (HELPED, sent))
+sent, *_ = run(["\x1bOQ", "\x1bOQ", "after show\r"])                          # F2 twice (xterm's code)
+check("F2 goes round the program's levels (its /show), nothing sent", SHOWN == ["", ""] and sent == ["after show"], (SHOWN, sent))
 
 rows = ["| name | size |", "|---|---:|", "| a.py | 12 |", "| 界面.py | 3400 |"]
 t = hearthside.table_lines(rows, 100)
