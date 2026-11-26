@@ -21,6 +21,12 @@ hobkin chat
   on another service when one runs out of quota, and the switch happens at once.
 - **Code blocks in colour,** by the language their fence names (Pygments).
 - **Tab completes file paths** as you type them in a message, from the folder you started the chat in.
+- **Scroll back and search:** PgUp opens the whole conversation full-screen (PgUp/PgDn and the arrows to move),
+  Ctrl-F searches it (Enter to stop at a match, n and N for the next and the one before), and Esc or q brings you
+  back to the chat with what you were typing. Ctrl-F from the chat opens it searching.
+- **Tables lined up** in columns, and list bullets tidied, in the chat and in the scrollback.
+- **Drafts kept:** a half-written message survives leaving the chat or a dropped connection, and is there to
+  finish when you come back (beside the history file, as `HISTORY.draft`, until it's sent or cleared with Ctrl-C).
 - **Not full-screen,** on purpose: your terminal's scrollback, search and copying work as they always do. To copy
   a code block the agent wrote, `/copy` (hobkin's) puts it on your clipboard; `/copy 2` the one before.
 
@@ -44,6 +50,7 @@ hearthside.chat(
     commands={"/stop": "finish and exit"},   # or just a list of words
     local={"/copy": copy, "/help": help},     # answered here, never sent: fn(rest) -> text to print ("/help" is F1)
     arguments={"/model": models},             # models() -> [(value, what it is)]: the menu after "/model "
+    backlog=whole_conversation,               # backlog() -> lines, for PgUp (default: what this chat has shown)
 )
 ```
 

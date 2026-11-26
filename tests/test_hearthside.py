@@ -108,5 +108,42 @@ check("an unknown language is left alone", [hearthside.Painter()(l) for l in ["`
 sent, *_ = run(["\x1bOP", "after help\r"])                    # F1 (xterm's code)
 check("F1 is the help, and nothing is sent for it", HELPED == [""] and sent == ["after help"], (HELPED, sent))
 
+rows = ["| name | size |", "|---|---:|", "| a.py | 12 |", "| 界面.py | 3400 |"]
+t = hearthside.table_lines(rows, 100)
+check("a table is lined up in columns, wide characters counted as two, the header bold, its rule drawn",
+      len(t) == 4 and "\x1b[1m" in t[0] and t[1].startswith("├") and len({len(hearthside.ANSI_RE.sub("", x).replace("界", "xx").replace("面", "xx")) for x in t}) == 1, t)
+check("a table too wide for the terminal, or ragged, is left as written",
+      hearthside.table_lines(rows, 10) == rows and hearthside.table_lines(["| a | b |", "| c |"], 100) == ["| a | b |", "| c |"])
+p2 = hearthside.Painter()
+fed = p2.feed(["10:00:07 s1> Here:", "| a | b |", "|---|---|", "| 1 | 2 |", "- one", "  * two", "```", "| not | a table |", "- nor a list", "```"])
+check("feed lines up tables and tidies bullets, but not inside code",
+      fed[1].startswith("\x1b[1m│ a") and fed[4] == "• one" and fed[5] == "  • two" and "| not | a table |" in fed and "- nor a list" in fed, fed)
+
+sent, *_ = run(["keep me", "\x1b[5~", "q", " too\r"])                      # PgUp, then back
+check("PgUp opens the scrollback view; back from it, what you were typing is still there", sent == ["keep me too"], sent)
+sent, *_ = run(["\x06", "hello", "\r", "n", "\x1b"] + [""] * 6 + ["after search\r"])   # Ctrl-F, search, next, Esc
+# (a lone Esc is only Esc after a pause: straight after it, the next key would read as Alt+key)
+check("Ctrl-F opens it searching; Esc comes back to the chat", sent == ["after search"], sent)
+
+hist = os.path.join(tempfile.mkdtemp(), "history")
+def half_written():
+    with create_pipe_input() as inp, create_app_session(input=inp, output=DummyOutput()):
+        def typist():
+            time.sleep(0.3); inp.send_text("half writ"); time.sleep(0.3); inp.close()   # the connection drops
+        threading.Thread(target=typist, daemon=True).start()
+        try:
+            hearthside.chat("s1", [], lambda: [], lambda t: None, history=hist, interval=0.05)
+        except Exception:
+            pass
+half_written()
+kept = open(hist + ".draft").read() if os.path.exists(hist + ".draft") else None
+sent = []
+with create_pipe_input() as inp, create_app_session(input=inp, output=DummyOutput()):
+    threading.Thread(target=lambda: (time.sleep(0.3), inp.send_text("ten\r"), time.sleep(0.2), inp.send_text("\x04")),
+                     daemon=True).start()
+    hearthside.chat("s1", [], lambda: [], sent.append, history=hist, interval=0.05)
+check("a half-written message survives a dropped connection, and is there to finish next time",
+      kept == "half writ" and sent == ["half written"] and not os.path.exists(hist + ".draft"), (kept, sent))
+
 print("FAILED" if failed else "ALL PASSED")
 sys.exit(1 if failed else 0)
